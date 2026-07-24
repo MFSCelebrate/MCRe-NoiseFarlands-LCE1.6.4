@@ -1,0 +1,103 @@
+if(NOT DEFINED OUTPUT_FILE OR OUTPUT_FILE STREQUAL "")
+  message(FATAL_ERROR "OUTPUT_FILE is required")
+endif()
+
+if(NOT DEFINED XML_ROOT OR XML_ROOT STREQUAL "")
+  message(FATAL_ERROR "XML_ROOT is required")
+endif()
+
+if(NOT DEFINED BASE_HEADER)
+  set(BASE_HEADER "")
+endif()
+
+if(NOT EXISTS "${XML_ROOT}")
+  message(FATAL_ERROR "XML_ROOT does not exist: ${XML_ROOT}")
+endif()
+
+set(_defined_names "")
+set(_entries "")
+set(_max_id -1)
+
+if(BASE_HEADER AND EXISTS "${BASE_HEADER}")
+  file(STRINGS "${BASE_HEADER}" _base_lines REGEX "^#[ \t]*define[ \t]+IDS_[A-Za-z0-9_]+[ \t]+[0-9]+([ \t].*)?$")
+  foreach(_line IN LISTS _base_lines)
+    string(REGEX REPLACE "^#[ \t]*define[ \t]+(IDS_[A-Za-z0-9_]+)[ \t]+([0-9]+).*$" "\\1;\\2" _parts "${_line}")
+    list(LENGTH _parts _part_count)
+    if(_part_count LESS 2)
+      continue()
+    endif()
+
+    list(GET _parts 0 _name)
+    list(GET _parts 1 _value)
+
+    list(FIND _defined_names "${_name}" _name_index)
+    if(NOT _name_index EQUAL -1)
+      continue()
+    endif()
+
+    list(APPEND _defined_names "${_name}")
+    set(_padded_value "000000000${_value}")
+    string(REGEX REPLACE "^.*([0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9])$" "\\1" _padded_value "${_padded_value}")
+    list(APPEND _entries "${_padded_value}|${_value}|${_name}")
+
+    if(_value GREATER _max_id)
+      set(_max_id "${_value}")
+    endif()
+  endforeach()
+endif()
+
+file(GLOB_RECURSE _xml_files "${XML_ROOT}/*.xml")
+set(_discovered_names "")
+foreach(_xml_file IN LISTS _xml_files)
+  file(STRINGS "${_xml_file}" _xml_lines REGEX "name=\"IDS_[A-Za-z0-9_]+\"")
+  foreach(_xml_line IN LISTS _xml_lines)
+    string(REGEX MATCH "name=\"(IDS_[A-Za-z0-9_]+)\"" _match "${_xml_line}")
+    if(_match STREQUAL "")
+      continue()
+    endif()
+
+    set(_name "${CMAKE_MATCH_1}")
+    list(FIND _defined_names "${_name}" _name_index)
+    if(NOT _name_index EQUAL -1)
+      continue()
+    endif()
+
+    list(FIND _discovered_names "${_name}" _discovered_index)
+    if(NOT _discovered_index EQUAL -1)
+      continue()
+    endif()
+
+    list(APPEND _discovered_names "${_name}")
+  endforeach()
+endforeach()
+
+list(SORT _discovered_names)
+
+set(_next_id "${_max_id}")
+foreach(_name IN LISTS _discovered_names)
+  math(EXPR _next_id "${_next_id} + 1")
+  set(_padded_value "000000000${_next_id}")
+  string(REGEX REPLACE "^.*([0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9])$" "\\1" _padded_value "${_padded_value}")
+  list(APPEND _entries "${_padded_value}|${_next_id}|${_name}")
+  list(APPEND _defined_names "${_name}")
+endforeach()
+
+list(SORT _entries)
+list(LENGTH _entries _entry_count)
+
+get_filename_component(_output_dir "${OUTPUT_FILE}" DIRECTORY)
+if(NOT _output_dir STREQUAL "")
+  file(MAKE_DIRECTORY "${_output_dir}")
+endif()
+
+file(WRITE "${OUTPUT_FILE}" "#pragma once\n")
+file(APPEND "${OUTPUT_FILE}" "// Auto-generated from localization XML. Do not edit manually.\n")
+file(APPEND "${OUTPUT_FILE}" "// Source root: ${XML_ROOT}\n")
+file(APPEND "${OUTPUT_FILE}" "// Total strings: ${_entry_count}\n\n")
+
+foreach(_entry IN LISTS _entries)
+  string(REGEX REPLACE "^[0-9]+\\|([0-9]+)\\|(IDS_[A-Za-z0-9_]+)$" "\\1;\\2" _entry_parts "${_entry}")
+  list(GET _entry_parts 0 _value)
+  list(GET _entry_parts 1 _name)
+  file(APPEND "${OUTPUT_FILE}" "#define ${_name} ${_value}\n")
+endforeach()

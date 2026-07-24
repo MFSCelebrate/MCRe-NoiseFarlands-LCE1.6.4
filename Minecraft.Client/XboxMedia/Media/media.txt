@@ -1,0 +1,3 @@
+languages.loc
+Tutorial.pck
+DefaultSaveThumbnail64x64.png
