@@ -52,8 +52,8 @@ jobs:
         buildPresetAdditionalArgs: "['--target', 'Minecraft.Client']"
 
     - name: Zip Build
-      run: 7z a -r LCE${{ matrix.platform }}.zip ./build/${{ env.MATRIX_PLATFORM }}/Minecraft.Client/Release/* "-x!*.ipdb" "-x!*.iobj"
-
+      run: 7z a -r LCE${{ matrix.platform }}.zip ./build/${{ env.MATRIX_PLATFORM }}/Minecraft.Client/Debug/* "-x!*.ipdb" "-x!*.iobj"
+  
     - name: Stage artifacts
       run: |
         New-Item -ItemType Directory -Force -Path staging
@@ -62,8 +62,8 @@ jobs:
     - name: Stage exe and pdb
       if: matrix.platform == 'Windows64'
       run: |
-        Copy-Item ./build/${{ env.MATRIX_PLATFORM }}/Minecraft.Client/Release/Minecraft.Client.exe staging/
-
+        Copy-Item ./build/${{ env.MATRIX_PLATFORM }}/Minecraft.Client/Debug/Minecraft.Client.exe staging/
+    
     - name: Upload artifacts
       uses: actions/upload-artifact@v6
       with:
