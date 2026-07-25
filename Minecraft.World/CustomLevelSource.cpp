@@ -214,12 +214,7 @@ void CustomLevelSource::prepareHeights(int xOffs, int zOffs, byteArray blocks)
 							// 4J - more extra code to make sure that the column at the edge of the world is just water & rock, to match the infinite sea that
 							// continues on after the edge of the world.
 
-							if( emin == 0 )
-							{
-								// This matches code in MultiPlayerChunkCache that makes the geometry which continues at the edge of the world
-								if( yc * CHUNK_HEIGHT + y <= ( level->getSeaLevel() - 10 ) ) tileId = Tile::stone_Id;
-								else if( yc * CHUNK_HEIGHT + y < level->getSeaLevel() ) tileId = Tile::calmWater_Id;
-							}
+					
 
 							int indexY = (yc * CHUNK_HEIGHT + y);
 							int offsAdjustment = 0;
