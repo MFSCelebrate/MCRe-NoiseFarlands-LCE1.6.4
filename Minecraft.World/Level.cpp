@@ -589,7 +589,7 @@ void Level::_init()
 	scoreboard = new Scoreboard();
 
 	toCheckLevel = new int[ 32 * 32 * 32];	// 4J - brought forward from 1.8.2
-	InitializeCriticalSectionAndSpinCount(&m_checkLightCS, 5120);	// 4J - added for 1.8.2 lighting
+	InitializeCriticalSectionAndSpinCount(&m_checkLightCS, 2147483646);	// 4J - added for 1.8.2 lighting
 
 	// 4J Added
 	m_bDisableAddNewTileEntities = false;
