@@ -9,6 +9,10 @@
 #include "../Minecraft.World/net.minecraft.world.level.dimension.h"
 #include "TeleportCommand.h"
 
+#include <cstdlib>   // 用于 std::strtol
+#include <sstream>   // 用于 std::istringstream
+#include <vector>    // 用于 std::vector
+
 EGameCommand TeleportCommand::getId()
 {
 	return eGameCommand_Teleport;
@@ -16,75 +20,43 @@ EGameCommand TeleportCommand::getId()
 
 void TeleportCommand::execute(shared_ptr<CommandSender> source, byteArray commandData)
 {
-	ByteArrayInputStream bais(commandData);
-	DataInputStream dis(&bais);
+    // 1. 将字节数组转为字符串并分割参数
+    std::string cmdText(commandData.begin(), commandData.end());
+    std::vector<std::string> args;
+    std::istringstream iss(cmdText);
+    std::string arg;
+    while (iss >> arg) {
+        args.push_back(arg);
+    }
 
-	PlayerUID subjectID = dis.readPlayerUID();
-	PlayerUID destinationID = dis.readPlayerUID();
-	
-	bais.reset();
+    // 只支持 /tp <x> <y> <z>
+    if (args.size() != 3) {
+        return;
+    }
 
-	PlayerList *players = MinecraftServer::getInstance()->getPlayerList();
+    // 2. 确保命令发送者是玩家
+    shared_ptr<ServerPlayer> player = dynamic_pointer_cast<ServerPlayer>(source);
+    if (!player) {
+        return;
+    }
 
-	shared_ptr<ServerPlayer> subject = players->getPlayer(subjectID);
-	shared_ptr<ServerPlayer> destination = players->getPlayer(destinationID);
+    // 3. 检查玩家是否存活
+    if (!player->isAlive()) {
+        return;
+    }
 
-	if(subject != nullptr && destination != nullptr && subject->level->dimension->id == destination->level->dimension->id && subject->isAlive() )
-	{
-		subject->ride(nullptr);
-		subject->connection->teleport(destination->x, destination->y, destination->z, destination->yRot, destination->xRot);
-		//logAdminAction(source, "commands.tp.success", subject->getAName(), destination->getAName());
-		logAdminAction(source, ChatPacket::e_ChatCommandTeleportSuccess, subject->getName(), eTYPE_SERVERPLAYER, destination->getName());
+    // 4. 解析坐标（无任何边界限制）
+    char* endPtrX = nullptr;
+    char* endPtrY = nullptr;
+    char* endPtrZ = nullptr;
 
-		if(subject == source)
-		{
-			destination->sendMessage(subject->getName(), ChatPacket::e_ChatCommandTeleportToMe);
-		}
-		else
-		{
-			subject->sendMessage(destination->getName(), ChatPacket::e_ChatCommandTeleportMe);
-		}
-	}
+    int x = static_cast<int>(std::strtol(args[0].c_str(), &endPtrX, 10));
+    int y = static_cast<int>(std::strtol(args[1].c_str(), &endPtrY, 10));
+    int z = static_cast<int>(std::strtol(args[2].c_str(), &endPtrZ, 10));
 
-	//if (args.length >= 1) {
-	//	MinecraftServer server = MinecraftServer.getInstance();
-	//	ServerPlayer victim;
+    // 5. 执行传送（居中到方块中心）
+    player->teleportTo(x + 0.5f, y, z + 0.5f);
 
-	//	if (args.length == 2 || args.length == 4) {
-	//		victim = server.getPlayers().getPlayer(args[0]);
-	//		if (victim == null) throw new PlayerNotFoundException();
-	//	} else {
-	//		victim = (ServerPlayer) convertSourceToPlayer(source);
-	//	}
-
-	//	if (args.length == 3 || args.length == 4) {
-	//		if (victim.level != null) {
-	//			int pos = args.length - 3;
-	//			int maxPos = Level.MAX_LEVEL_SIZE;
-	//			int x = convertArgToInt(source, args[pos++], -maxPos, maxPos);
-	//			int y = convertArgToInt(source, args[pos++], Level.minBuildHeight, Level.maxBuildHeight);
-	//			int z = convertArgToInt(source, args[pos++], -maxPos, maxPos);
-
-	//			victim.teleportTo(x + 0.5f, y, z + 0.5f);
-	//			logAdminAction(source, "commands.tp.coordinates", victim.getAName(), x, y, z);
-	//		}
-	//	} else if (args.length == 1 || args.length == 2) {
-	//		ServerPlayer destination = server.getPlayers().getPlayer(args[args.length - 1]);
-	//		if (destination == null) throw new PlayerNotFoundException();
-
-	//		victim.connection.teleport(destination.x, destination.y, destination.z, destination.yRot, destination.xRot);
-	//		logAdminAction(source, "commands.tp.success", victim.getAName(), destination.getAName());
-	//	}
-	//}
-}
-
-shared_ptr<GameCommandPacket> TeleportCommand::preparePacket(PlayerUID subject, PlayerUID destination)
-{
-	ByteArrayOutputStream baos;
-	DataOutputStream dos(&baos);
-
-	dos.writePlayerUID(subject);
-	dos.writePlayerUID(destination);
-
-	return std::make_shared<GameCommandPacket>(eGameCommand_Teleport, baos.toByteArray());
+    // 6. （可选）日志记录
+    // logAdminAction(source, "commands.tp.coordinates", player->getName(), x, y, z);
 }
