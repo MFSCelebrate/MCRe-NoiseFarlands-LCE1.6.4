@@ -97,7 +97,7 @@ public:
 #ifdef __ORBIS__
 		OrbisInit();		// For PS4, we need to make sure Ult is set up for the critical sections to be able to initialise
 #endif
-		InitializeCriticalSectionAndSpinCount(&m_cs,5120);
+		InitializeCriticalSectionAndSpinCount(&m_cs,2147483646);
 	}
 	~XLockFreeStack() { DeleteCriticalSection( &m_cs ); }
 	void Initialize() {}
