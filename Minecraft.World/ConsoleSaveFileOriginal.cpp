@@ -46,7 +46,7 @@ void *ConsoleSaveFileOriginal::pvHeap = nullptr;
 
 ConsoleSaveFileOriginal::ConsoleSaveFileOriginal(const wstring &fileName, LPVOID pvSaveData /*= nullptr*/, DWORD dFileSize /*= 0*/, bool forceCleanSave /*= false*/, ESavePlatform plat /*= SAVE_FILE_PLATFORM_LOCAL*/)
 {
-	InitializeCriticalSectionAndSpinCount(&m_lock,5120);
+	InitializeCriticalSectionAndSpinCount(&m_lock,2147483646);
 
 	// One time initialise of static stuff required for our storage
 	if( pvHeap == nullptr )
