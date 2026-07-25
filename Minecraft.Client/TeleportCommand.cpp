@@ -9,9 +9,9 @@
 #include "../Minecraft.World/net.minecraft.world.level.dimension.h"
 #include "TeleportCommand.h"
 
-#include <cstdlib>   // 用于 std::strtol
-#include <sstream>   // 用于 std::istringstream
-#include <vector>    // 用于 std::vector
+#include <sstream>   // std::istringstream
+#include <vector>    // std::vector
+#include <cstdlib>   // std::strtol
 
 EGameCommand TeleportCommand::getId()
 {
@@ -20,8 +20,10 @@ EGameCommand TeleportCommand::getId()
 
 void TeleportCommand::execute(shared_ptr<CommandSender> source, byteArray commandData)
 {
-    // 1. 将字节数组转为字符串并分割参数
-    std::string cmdText(commandData.begin(), commandData.end());
+    // 1. 将字节数组转为字符串（使用 data 和 length，避免迭代器）
+    std::string cmdText(reinterpret_cast<const char*>(commandData.data), commandData.length);
+
+    // 2. 分割参数
     std::vector<std::string> args;
     std::istringstream iss(cmdText);
     std::string arg;
@@ -29,23 +31,23 @@ void TeleportCommand::execute(shared_ptr<CommandSender> source, byteArray comman
         args.push_back(arg);
     }
 
-    // 只支持 /tp <x> <y> <z>
+    // 只支持 /tp <x> <y> <z>（三个整数）
     if (args.size() != 3) {
         return;
     }
 
-    // 2. 确保命令发送者是玩家
+    // 3. 确保命令发送者是玩家
     shared_ptr<ServerPlayer> player = dynamic_pointer_cast<ServerPlayer>(source);
     if (!player) {
         return;
     }
 
-    // 3. 检查玩家是否存活
+    // 4. 检查玩家是否存活
     if (!player->isAlive()) {
         return;
     }
 
-    // 4. 解析坐标（无任何边界限制）
+    // 5. 解析坐标（无边界检查，直接使用 strtol）
     char* endPtrX = nullptr;
     char* endPtrY = nullptr;
     char* endPtrZ = nullptr;
@@ -54,9 +56,9 @@ void TeleportCommand::execute(shared_ptr<CommandSender> source, byteArray comman
     int y = static_cast<int>(std::strtol(args[1].c_str(), &endPtrY, 10));
     int z = static_cast<int>(std::strtol(args[2].c_str(), &endPtrZ, 10));
 
-    // 5. 执行传送（居中到方块中心）
+    // 6. 执行传送（居中到方块中心）
     player->teleportTo(x + 0.5f, y, z + 0.5f);
 
-    // 6. （可选）日志记录
+    // 7. （可选）日志记录
     // logAdminAction(source, "commands.tp.coordinates", player->getName(), x, y, z);
 }
