@@ -62,3 +62,14 @@ void TeleportCommand::execute(shared_ptr<CommandSender> source, byteArray comman
     // 7. （可选）日志记录
     // logAdminAction(source, "commands.tp.coordinates", player->getName(), x, y, z);
 }
+
+shared_ptr<GameCommandPacket> TeleportCommand::preparePacket(PlayerUID subject, PlayerUID destination)
+{
+    ByteArrayOutputStream baos;
+    DataOutputStream dos(&baos);
+
+    dos.writePlayerUID(subject);
+    dos.writePlayerUID(destination);
+
+    return std::make_shared<GameCommandPacket>(eGameCommand_Teleport, baos.toByteArray());
+}
