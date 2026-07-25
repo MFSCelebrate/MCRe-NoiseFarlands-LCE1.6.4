@@ -322,7 +322,7 @@ void McRegionChunkStorage::flush()
 
 void McRegionChunkStorage::staticCtor()
 {
-	InitializeCriticalSectionAndSpinCount(&cs_memory,5120);
+	InitializeCriticalSectionAndSpinCount(&cs_memory,2147483646);
 
 	for(unsigned int i = 0; i < 3; ++i)
 	{
