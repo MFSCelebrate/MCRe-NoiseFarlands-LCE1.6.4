@@ -791,7 +791,7 @@ int  CompressedTileStorage::getDataRegion(byteArray dataInOut, int x0, int y0, i
 
 void CompressedTileStorage::staticCtor()
 {
-	InitializeCriticalSectionAndSpinCount(&cs_write, 5120);
+	InitializeCriticalSectionAndSpinCount(&cs_write, 2147483646);
 	for( int i = 0; i < 3; i++ )
 	{
 		deleteQueue[i].Initialize();
