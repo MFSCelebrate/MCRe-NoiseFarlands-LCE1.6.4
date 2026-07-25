@@ -48,7 +48,7 @@ jobs:
         VCPKG_ROOT: "" # Disable vcpkg for CI builds
       with:
         configurePreset: ${{ env.MATRIX_PLATFORM }}
-        buildPreset: ${{ env.MATRIX_PLATFORM }}-release
+        buildPreset: ${{ env.MATRIX_PLATFORM }}-debug
         buildPresetAdditionalArgs: "['--target', 'Minecraft.Client']"
 
     - name: Zip Build
