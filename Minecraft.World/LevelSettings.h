@@ -4,6 +4,8 @@ class LevelType;
 class Abilities;
 class LevelData;
 
+#include <cstdint>   // 提供 int64_t, uint64_t 等
+
 #define _ADVENTURE_MODE_ENABLED
 
 // 4J Stu - Was Java enum class
@@ -46,13 +48,13 @@ private:
 	bool allowCommands;
 	bool startingBonusItems;	// 4J - brought forward from 1.3.2
 	wstring levelTypeOptions;
-	int m_xzSize;	// 4J Added
-	int m_hellScale;
+	int64_t m_xzSize;	// 4J Added
+	int64_t m_hellScale;
 
-	void _init(int64_t seed, GameType *gameType, bool generateMapFeatures, bool hardcore, bool newSeaLevel, LevelType *levelType, int xzSize, int hellScale); // 4J Added xzSize and hellScale param
+	void _init(int64_t seed, GameType *gameType, bool generateMapFeatures, bool hardcore, bool newSeaLevel, LevelType *levelType, int64_t xzSize, int64_t hellScale); // 4J Added xzSize and hellScale param
 
 public:
-	LevelSettings(int64_t seed, GameType *gameType, bool generateMapFeatures, bool hardcore, bool newSeaLevel, LevelType *levelType, int xzSize, int hellScale); // 4J Added xzSize and hellScale param
+	LevelSettings(int64_t seed, GameType *gameType, bool generateMapFeatures, bool hardcore, bool newSeaLevel, LevelType *levelType, int64_t xzSize, int64_t hellScale); // 4J Added xzSize and hellScale param
 	LevelSettings(LevelData *levelData);
 	LevelSettings *enableStartingBonusItems();		// 4J - brought forward from 1.3.2
 	LevelSettings *enableSinglePlayerCommands();
@@ -65,8 +67,8 @@ public:
 	bool getAllowCommands();
 	bool isGenerateMapFeatures();
 	bool useNewSeaLevel();
-	int getXZSize(); // 4J Added
-	int getHellScale(); // 4J Added
+	int64_t getXZSize(); // 4J Added
+	int64_t getHellScale(); // 4J Added
 	static GameType *validateGameType(int gameType);
 	wstring getLevelTypeOptions();
 };
