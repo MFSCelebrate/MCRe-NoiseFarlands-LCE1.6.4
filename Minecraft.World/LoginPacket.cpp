@@ -33,7 +33,7 @@ LoginPacket::LoginPacket()
 	m_pLevelType = nullptr;
 	m_uiGamePrivileges = 0;
 	m_xzSize = 9223372036854775807;
-	m_hellScale = 9223372036854775807;
+	m_hellScale = 8;
 }
 
 // Client -> Server
@@ -62,7 +62,7 @@ LoginPacket::LoginPacket(const wstring& userName, int clientVersion, PlayerUID o
 	m_pLevelType = nullptr;
 	m_uiGamePrivileges = 0;
 	m_xzSize = 9223372036854775807;
-	m_hellScale = 9223372036854775807;
+	m_hellScale = 8;
 }
 
 // Server -> Client
