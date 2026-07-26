@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ChunkSource.h"
+#include <cstdint>   // 提供 int64_t, uint64_t 等
 class PerlinNoise;
 
 class TheEndLevelRandomLevelSource : public ChunkSource
