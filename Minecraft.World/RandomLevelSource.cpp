@@ -110,12 +110,12 @@ LARGE_INTEGER g_averagePrepareHeightsTime = {0, 0};
 
 #ifdef _LARGE_WORLDS
 
-int RandomLevelSource::getMinDistanceToEdge(int xxx, int zzz, int worldSize, float falloffStart)
+int RandomLevelSource::getMinDistanceToEdge(int64_t xxx, int64_t zzz, int64_t worldSize, float falloffStart)
 {
 	// Get distance to edges of world in x
 	// we have to do a proper line dist check here
-	int min = -worldSize/2;
-	int max = (worldSize/2)-1;
+	int64_t min = -worldSize/2;
+	int64_t max = (worldSize/2)-1;
 
 	// 	// only check if either x or z values are within the falloff
 	// 	if(xxx > (min - falloffStart)
@@ -157,56 +157,22 @@ int RandomLevelSource::getMinDistanceToEdge(int xxx, int zzz, int worldSize, flo
 
 
 // 原函数中所有计算被替换为直接返回 0
-float RandomLevelSource::getHeightFalloff(int xxx, int zzz, int* pEMin)
+float RandomLevelSource::getHeightFalloff(int64_t xxx, int64_t zzz, int* pEMin)
 {
     // 完全禁用边缘下降，让地形在任何位置都正常生成
     *pEMin = 0;
     return 0.0f;
 }
-
 #else
 
 
 // MGH  - go back to using the simpler version for PS3/vita/360, as it was causing a lot of slow down on the tuturial generation
-float RandomLevelSource::getHeightFalloff(int xxx, int zzz, int* pEMin)
+// 原函数中所有计算被替换为直接返回 0
+float RandomLevelSource::getHeightFalloff(int64_t xxx, int64_t zzz, int* pEMin)
 {
-	///////////////////////////////////////////////////////////////////
-	// 4J - add this chunk of code to make land "fall-off" at the edges of
-	// a finite world - size of that world is currently hard-coded in here
-	const int worldSize = m_XZSize * 16;
-	const int falloffStart = 32;			// chunks away from edge were we start doing fall-off
-	const float falloffMax = 128.0f;			// max value we need to get to falloff by the edge of the map
-
-	// Get distance to edges of world in x
-	int xxx0 = xxx + ( worldSize / 2 );
-	if( xxx0 < 0 ) xxx0 = 0;
-	int xxx1 = ( ( worldSize / 2 ) - 1 ) - xxx;
-	if( xxx1 < 0 ) xxx1 = 0;
-
-	// Get distance to edges of world in z
-	int zzz0 = zzz + ( worldSize / 2 );
-	if( zzz0 < 0 ) zzz0 = 0;
-	int zzz1 = ( ( worldSize / 2 ) - 1 ) - zzz;
-	if( zzz1 < 0 ) zzz1 = 0;
-
-	// Get min distance to any edge
-	int emin = xxx0;
-	if (xxx1 < emin ) emin = xxx1;
-	if (zzz0 < emin ) emin = zzz0;
-	if (zzz1 < emin ) emin = zzz1;
-
-	float comp = 0.0f;
-
-	// Calculate how much we want the world to fall away, if we're in the defined region to do so
-	if( emin < falloffStart )
-	{
-		int falloff = falloffStart - emin;
-		comp = ((float)falloff / (float)falloffStart ) * falloffMax;
-	}
-	// 4J - end of extra code
-	///////////////////////////////////////////////////////////////////
-	*pEMin = emin;
-	return comp;
+    // 完全禁用边缘下降，让地形在任何位置都正常生成
+    *pEMin = 0;
+    return 0.0f;
 }
 
 #endif // _LARGE_WORLDS
