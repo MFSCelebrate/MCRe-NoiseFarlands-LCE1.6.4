@@ -6,7 +6,7 @@
 #include "LoginPacket.h"
 #include "LevelType.h"
 
-
+#include <cstdint>   // 提供 int64_t, uint64_t 等
 
 LoginPacket::LoginPacket()
 {
@@ -32,8 +32,8 @@ LoginPacket::LoginPacket()
 	m_newSeaLevel = false;
 	m_pLevelType = nullptr;
 	m_uiGamePrivileges = 0;
-	m_xzSize = LEVEL_MAX_WIDTH;
-	m_hellScale = HELL_LEVEL_MAX_SCALE;
+	m_xzSize = 9223372036854775807;
+	m_hellScale = 9223372036854775807;
 }
 
 // Client -> Server
@@ -61,12 +61,12 @@ LoginPacket::LoginPacket(const wstring& userName, int clientVersion, PlayerUID o
 	m_newSeaLevel = false;
 	m_pLevelType = nullptr;
 	m_uiGamePrivileges = 0;
-	m_xzSize = LEVEL_MAX_WIDTH;
-	m_hellScale = HELL_LEVEL_MAX_SCALE;
+	m_xzSize = 9223372036854775807;
+	m_hellScale = 9223372036854775807;
 }
 
 // Server -> Client
-LoginPacket::LoginPacket(const wstring& userName, int clientVersion, LevelType *pLevelType, int64_t seed, int gameType, char dimension, BYTE mapHeight, BYTE maxPlayers, char difficulty, INT multiplayerInstanceId, BYTE playerIndex, bool newSeaLevel, unsigned int uiGamePrivileges, int xzSize, int hellScale)
+LoginPacket::LoginPacket(const wstring& userName, int clientVersion, LevelType *pLevelType, int64_t seed, int gameType, char dimension, BYTE mapHeight, BYTE maxPlayers, char difficulty, INT multiplayerInstanceId, BYTE playerIndex, bool newSeaLevel, unsigned int uiGamePrivileges, int64_t xzSize, int64_t hellScale)
 {
 	this->userName = userName;
 	this->clientVersion = clientVersion;
@@ -124,8 +124,8 @@ void LoginPacket::read(DataInputStream *dis) //throws IOException
 	m_newSeaLevel = dis->readBoolean();
 	m_uiGamePrivileges = dis->readInt();
 #ifdef _LARGE_WORLDS
-	m_xzSize = dis->readShort();
-	m_hellScale = dis->read();
+	m_xzSize = dis->readLong();
+	m_hellScale = dis->readLong();
 #endif
 	app.DebugPrintf("LoginPacket::read - Difficulty = %d\n",difficulty);
 
@@ -161,8 +161,8 @@ void LoginPacket::write(DataOutputStream *dos) //throws IOException
 	dos->writeBoolean(m_newSeaLevel);
 	dos->writeInt(m_uiGamePrivileges);
 #ifdef _LARGE_WORLDS
-	dos->writeShort(m_xzSize);
-	dos->write(m_hellScale);
+	dos->writeLong(m_xzSize);
+	dos->writeLong(m_hellScale);
 #endif
 }
 
