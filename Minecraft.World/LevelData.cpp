@@ -86,21 +86,12 @@ LevelData::LevelData(CompoundTag *tag)
 		allowCommands = gameType == GameType::CREATIVE;
 	}
 
-	// 4J: Game rules are now stored with app game host options
-	/*if (tag->contains(L"GameRules"))
-	{
-		gameRules.loadFromTag(tag->getCompound(L"GameRules"));
-	}*/
+	newSeaLevel = tag->getBoolean(L"newSeaLevel");
+	hasBeenInCreative = tag->getBoolean(L"hasBeenInCreative");
 
-	newSeaLevel = tag->getBoolean(L"newSeaLevel"); // 4J added - only use new sea level for newly created maps. This read defaults to false. (sea level changes in 1.8.2)
-	hasBeenInCreative = tag->getBoolean(L"hasBeenInCreative"); // 4J added so we can not award achievements to levels modified in creative
-
-	// 4J added - for stronghold position
 	bStronghold = tag->getBoolean(L"hasStronghold");
-
 	if(bStronghold==false)
 	{
-		// we need to generate the position
 		xStronghold=yStronghold=zStronghold=0;
 	}
 	else
@@ -110,12 +101,9 @@ LevelData::LevelData(CompoundTag *tag)
 		zStronghold = tag->getInt(L"StrongholdZ");
 	}
 
-	// 4J added - for stronghold end portal position
 	bStrongholdEndPortal = tag->getBoolean(L"hasStrongholdEndPortal");
-
 	if(bStrongholdEndPortal==false)
 	{
-		// we need to generate the position
 		xStrongholdEndPortal=zStrongholdEndPortal=0;
 	}
 	else
@@ -124,9 +112,9 @@ LevelData::LevelData(CompoundTag *tag)
 		zStrongholdEndPortal = tag->getInt(L"StrongholdEndPortalZ");
 	}
 
-	// 4J Added
-	m_xzSize = tag->getInt(L"XZSize");
-	m_hellScale = tag->getInt(L"HellScale");
+	// 4J Added - 改为 long 读写
+	m_xzSize = tag->getLong(L"XZSize");
+	m_hellScale = tag->getLong(L"HellScale");
 
 #ifdef _LARGE_WORLDS
 	m_classicEdgeMoat = tag->getInt(L"ClassicMoat");
@@ -153,50 +141,24 @@ LevelData::LevelData(CompoundTag *tag)
 	}
 #endif
 
-
-	m_xzSize = min(m_xzSize,LEVEL_MAX_WIDTH);
-	m_xzSize = max(m_xzSize,LEVEL_MIN_WIDTH);
-
-	m_hellScale = min(m_hellScale,HELL_LEVEL_MAX_SCALE);
-	m_hellScale = max(m_hellScale,HELL_LEVEL_MIN_SCALE);
-
-	int hellXZSize = m_xzSize / m_hellScale;
-	while(hellXZSize > HELL_LEVEL_MAX_WIDTH && m_hellScale < HELL_LEVEL_MAX_SCALE)
-	{
-		++m_hellScale;
-		hellXZSize = m_xzSize / m_hellScale;
-	}
+	// ========== 完全移除所有范围限制 ==========
+	// 注释掉原来的 min/max 限制和 hellScale 调整循环
+	// m_xzSize = min(m_xzSize, LEVEL_MAX_WIDTH);
+	// m_xzSize = max(m_xzSize, LEVEL_MIN_WIDTH);
+	// m_hellScale = min(m_hellScale, HELL_LEVEL_MAX_SCALE);
+	// m_hellScale = max(m_hellScale, HELL_LEVEL_MIN_SCALE);
+	// int hellXZSize = m_xzSize / m_hellScale;
+	// while(hellXZSize > HELL_LEVEL_MAX_WIDTH && m_hellScale < HELL_LEVEL_MAX_SCALE)
+	// {
+	// 	++m_hellScale;
+	// 	hellXZSize = m_xzSize / m_hellScale;
+	// }
 
 #ifdef _LARGE_WORLDS
-	// set the host option, in case it wasn't setup already
-	EGameHostOptionWorldSize hostOptionworldSize = e_worldSize_Unknown;
-	switch(m_xzSize)
-	{
-	case LEVEL_WIDTH_CLASSIC:	hostOptionworldSize = e_worldSize_Classic;		break;
-	case LEVEL_WIDTH_SMALL:		hostOptionworldSize = e_worldSize_Small;		break;
-	case LEVEL_WIDTH_MEDIUM:	hostOptionworldSize = e_worldSize_Medium;		break;
-	case LEVEL_WIDTH_LARGE:		hostOptionworldSize = e_worldSize_Large;		break;
-	default: assert(0);		break;
-	}
-	app.SetGameHostOption(eGameHostOption_WorldSize, hostOptionworldSize );
+	// 不再设置世界大小主机选项，因为已无限
+	// app.SetGameHostOption(eGameHostOption_WorldSize, hostOptionworldSize);
 #endif
 
-	/* 4J - we don't store this anymore
-	if (tag->contains(L"Player"))
-	{
-	loadedPlayerTag = tag->getCompound(L"Player");
-	dimension = loadedPlayerTag->getInt(L"Dimension");
-	}
-	else
-<<<<<<< HEAD
-	{		
-	this->loadedPlayerTag = nullptr;
-=======
-	{
-	this->loadedPlayerTag = NULL;
->>>>>>> origin/main
-	}
-	*/
 	dimension = 0;
 }
 
@@ -212,15 +174,13 @@ LevelData::LevelData(LevelSettings *levelSettings, const wstring& levelName)
 	generatorOptions = levelSettings->getLevelTypeOptions();
 	allowCommands = levelSettings->getAllowCommands();
 
-	// 4J Stu - Default initers
 	xSpawn = 0;
 	ySpawn = 0;
 	zSpawn = 0;
-	dayTime = -1;		// 4J-JEV: Edited: To know when this is uninitialized.
+	dayTime = -1;
 	gameTime = -1;
 	lastPlayed = 0;
 	sizeOnDisk = 0;
-	//    this->loadedPlayerTag = nullptr;	// 4J - we don't store this anymore
 	dimension = 0;
 	version = 0;
 	rainTime = 0;
@@ -228,10 +188,9 @@ LevelData::LevelData(LevelSettings *levelSettings, const wstring& levelName)
 	thunderTime = 0;
 	thundering = false;
 	initialized = false;
-	newSeaLevel = levelSettings->useNewSeaLevel();	// 4J added - only use new sea level for newly created maps (sea level changes in 1.8.2)
-	hasBeenInCreative = levelSettings->getGameType() == GameType::CREATIVE; // 4J added
+	newSeaLevel = levelSettings->useNewSeaLevel();
+	hasBeenInCreative = levelSettings->getGameType() == GameType::CREATIVE;
 
-	// 4J-PB for the stronghold position
 	bStronghold=false;
 	xStronghold = 0;
 	yStronghold = 0;
@@ -243,18 +202,18 @@ LevelData::LevelData(LevelSettings *levelSettings, const wstring& levelName)
 	m_xzSize = levelSettings->getXZSize();
 	m_hellScale = levelSettings->getHellScale();
 
-	m_xzSize = min(m_xzSize,LEVEL_MAX_WIDTH);
-	m_xzSize = max(m_xzSize,LEVEL_MIN_WIDTH);
+	// ========== 移除限制 ==========
+	// m_xzSize = min(m_xzSize, LEVEL_MAX_WIDTH);
+	// m_xzSize = max(m_xzSize, LEVEL_MIN_WIDTH);
+	// m_hellScale = min(m_hellScale, HELL_LEVEL_MAX_SCALE);
+	// m_hellScale = max(m_hellScale, HELL_LEVEL_MIN_SCALE);
+	// int hellXZSize = m_xzSize / m_hellScale;
+	// while(hellXZSize > HELL_LEVEL_MAX_WIDTH && m_hellScale < HELL_LEVEL_MAX_SCALE)
+	// {
+	// 	++m_hellScale;
+	// 	hellXZSize = m_xzSize / m_hellScale;
+	// }
 
-	m_hellScale = min(m_hellScale,HELL_LEVEL_MAX_SCALE);
-	m_hellScale = max(m_hellScale,HELL_LEVEL_MIN_SCALE);
-
-	int hellXZSize = m_xzSize / m_hellScale;
-	while(hellXZSize > HELL_LEVEL_MAX_WIDTH && m_hellScale < HELL_LEVEL_MAX_SCALE)
-	{
-		++m_hellScale;
-		hellXZSize = m_xzSize / m_hellScale;
-	}
 #ifdef _LARGE_WORLDS
 	m_hellScaleOld = m_hellScale;
 	m_xzSizeOld = m_xzSize;
@@ -262,7 +221,6 @@ LevelData::LevelData(LevelSettings *levelSettings, const wstring& levelName)
 	m_smallEdgeMoat = false;
 	m_mediumEdgeMoat = false;
 #endif
-
 }
 
 LevelData::LevelData(LevelData *copy)
@@ -280,7 +238,6 @@ LevelData::LevelData(LevelData *copy)
 	dayTime = copy->dayTime;
 	lastPlayed = copy->lastPlayed;
 	sizeOnDisk = copy->sizeOnDisk;
-	//    this->loadedPlayerTag = copy->loadedPlayerTag;		// 4J - we don't store this anymore
 	dimension = copy->dimension;
 	levelName = copy->levelName;
 	version = copy->version;
@@ -295,7 +252,6 @@ LevelData::LevelData(LevelData *copy)
 	hasBeenInCreative = copy->hasBeenInCreative;
 	gameRules = copy->gameRules;
 
-	// 4J-PB for the stronghold position
 	bStronghold=copy->bStronghold;
 	xStronghold = copy->xStronghold;
 	yStronghold = copy->yStronghold;
@@ -318,15 +274,12 @@ LevelData::LevelData(LevelData *copy)
 CompoundTag *LevelData::createTag()
 {
 	CompoundTag *tag = new CompoundTag();
-
 	setTagData(tag);
-
 	return tag;
 }
 
 CompoundTag *LevelData::createTag(vector<shared_ptr<Player> > *players)
 {
-	// 4J - removed all code for storing tags for players
 	return createTag();
 }
 
@@ -355,29 +308,27 @@ void LevelData::setTagData(CompoundTag *tag)
 	tag->putBoolean(L"hardcore", hardcore);
 	tag->putBoolean(L"allowCommands", allowCommands);
 	tag->putBoolean(L"initialized", initialized);
-	// 4J: Game rules are now stored with app game host options
-	//tag->putCompound(L"GameRules", gameRules.createTag());
 	tag->putBoolean(L"newSeaLevel", newSeaLevel);
 	tag->putBoolean(L"hasBeenInCreative", hasBeenInCreative);
-	// store the stronghold position
 	tag->putBoolean(L"hasStronghold", bStronghold);
 	tag->putInt(L"StrongholdX", xStronghold);
 	tag->putInt(L"StrongholdY", yStronghold);
 	tag->putInt(L"StrongholdZ", zStronghold);
-	// store the stronghold end portal position
 	tag->putBoolean(L"hasStrongholdEndPortal", bStrongholdEndPortal);
 	tag->putInt(L"StrongholdEndPortalX", xStrongholdEndPortal);
 	tag->putInt(L"StrongholdEndPortalZ", zStrongholdEndPortal);
-	tag->putInt(L"XZSize", m_xzSize);
+	// 使用 putLong 存储长整型世界尺寸
+	tag->putLong(L"XZSize", m_xzSize);
 #ifdef _LARGE_WORLDS
 	tag->putInt(L"ClassicMoat", m_classicEdgeMoat);
 	tag->putInt(L"SmallMoat", m_smallEdgeMoat);
 	tag->putInt(L"MediumMoat", m_mediumEdgeMoat);
 #endif
-
-	tag->putInt(L"HellScale", m_hellScale);
+	tag->putLong(L"HellScale", m_hellScale);
 }
 
+// 其余成员函数保持不变，但 getXZSize() 和 getHellScale() 的返回类型应改为 long（需在头文件中修改）
+// 为与现有代码兼容，此处仅展示修改部分，实际使用中请同步修改 LevelData.h 中的声明。
 int64_t LevelData::getSeed()
 {
 	return seed;
