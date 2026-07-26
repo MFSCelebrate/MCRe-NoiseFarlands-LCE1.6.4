@@ -2,6 +2,7 @@
 using namespace std;
 
 #include "GameRules.h"
+#include <cstdint>   // 提供 int64_t, uint64_t 等
 
 class Player;
 class CompoundTag;
@@ -41,15 +42,17 @@ private:
 	bool newSeaLevel;		// 4J added
 	bool hasBeenInCreative; // 4J added
 	bool spawnBonusChest;   // 4J added
-	int m_xzSize;	// 4J Added
+
+	// 4J Added - 改为 long 以支持无限世界尺寸
+	int64_t m_xzSize;	// 原来是 int
 #ifdef _LARGE_WORLDS
-	int m_xzSizeOld; // 4J MGH Added, for expanding worlds
+	int m_xzSizeOld; // 4J MGH Added, for expanding worlds  // 未要求改，暂保留 int
 	int m_hellScaleOld;
 	bool	m_classicEdgeMoat;
 	bool	m_smallEdgeMoat;
 	bool	m_mediumEdgeMoat;
 #endif
-	int m_hellScale; // 4J Added
+	int64_t m_hellScale; // 4J Added - 改为 long
 
 	// 4J added
 	int xStronghold;
@@ -146,12 +149,13 @@ public:
 	virtual bool isInitialized();
 	virtual void setInitialized(bool initialized);
 	virtual GameRules *getGameRules();
-	virtual int getXZSize(); // 4J Added
-#ifdef _LARGE_WORLDS
-	virtual  int getXZSizeOld(); // 4J Added
-	virtual void getMoatFlags(bool* bClassicEdgeMoat, bool* bSmallEdgeMoat, bool* bMediumEdgeMoat); //4J MGH - added
-	virtual  int getXZHellSizeOld(); // 4J Added
 
+	// 4J Added - 返回类型改为 long 以匹配新类型
+	virtual int64_t getXZSize();
+#ifdef _LARGE_WORLDS
+	virtual int getXZSizeOld(); // 未改，保持 int
+	virtual void getMoatFlags(bool* bClassicEdgeMoat, bool* bSmallEdgeMoat, bool* bMediumEdgeMoat); //4J MGH - added
+	virtual int getXZHellSizeOld(); // 未改
 #endif
-	virtual int getHellScale(); // 4J Addded
+	virtual int64_t getHellScale(); // 改为 long
 };
