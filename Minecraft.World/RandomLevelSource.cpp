@@ -10,6 +10,8 @@
 #include "net.minecraft.world.entity.h"
 #include "RandomLevelSource.h"
 
+#include <cstdint>   // 提供 int64_t, uint64_t 等
+
 #ifdef __PS3__
 #include "../Minecraft.Client/PS3/SPU_Tasks/PerlinNoise/PerlinNoiseJob.h"
 #include "C4JSpursJob.h"
@@ -154,45 +156,12 @@ int RandomLevelSource::getMinDistanceToEdge(int xxx, int zzz, int worldSize, flo
 }
 
 
+// 原函数中所有计算被替换为直接返回 0
 float RandomLevelSource::getHeightFalloff(int xxx, int zzz, int* pEMin)
 {
-	///////////////////////////////////////////////////////////////////
-	// 4J - add this chunk of code to make land "fall-off" at the edges of
-	// a finite world - size of that world is currently hard-coded in here
-	const int worldSize = m_XZSize * 16;
-	const int falloffStart = 32;			// chunks away from edge were we start doing fall-off
-	const float falloffMax = 128.0f;			// max value we need to get to falloff by the edge of the map
-
-	float comp = 0.0f;
-	int emin = getMinDistanceToEdge(xxx, zzz, worldSize, falloffStart);
-	// check if we have a larger world that should have moats
-	int expandedWorldSizes[3] = {LEVEL_WIDTH_CLASSIC*16,
-								LEVEL_WIDTH_SMALL*16,
-								LEVEL_WIDTH_MEDIUM*16};
-	bool expandedMoatValues[3] = {m_classicEdgeMoat, m_smallEdgeMoat, m_mediumEdgeMoat};
-	for(int i=0;i<3;i++)
-	{
-		if(expandedMoatValues[i] && (worldSize > expandedWorldSizes[i]))
-		{
-			// this world has been expanded, with moat settings, so we need fallofs at this edges too
-			int eminMoat = getMinDistanceToEdge(xxx, zzz, expandedWorldSizes[i], falloffStart);
-			if(eminMoat < emin)
-			{
-				emin = eminMoat;
-			}
-		}
-	}
-
-	// Calculate how much we want the world to fall away, if we're in the defined region to do so
-	if( emin < falloffStart )
-	{
-		int falloff = falloffStart - emin;
-		comp = (static_cast<float>(falloff) / static_cast<float>(falloffStart) ) * falloffMax;
-	}
-	*pEMin = emin;
-	return comp;
-	// 4J - end of extra code
-	///////////////////////////////////////////////////////////////////
+    // 完全禁用边缘下降，让地形在任何位置都正常生成
+    *pEMin = 0;
+    return 0.0f;
 }
 
 #else
@@ -325,12 +294,12 @@ void RandomLevelSource::prepareHeights(int xOffs, int zOffs, byteArray blocks)
 							// 4J - more extra code to make sure that the column at the edge of the world is just water & rock, to match the infinite sea that
 							// continues on after the edge of the world.
 
-							if( emin == 0 )
-							{
-								// This matches code in MultiPlayerChunkCache that makes the geometry which continues at the edge of the world
-								if( yc * CHUNK_HEIGHT + y <= ( level->getSeaLevel() - 10 ) ) tileId = Tile::stone_Id;
-								else if( yc * CHUNK_HEIGHT + y < level->getSeaLevel() ) tileId = Tile::calmWater_Id;
-							}
+							// if( emin == 0 )
+							// {
+								// // This matches code in MultiPlayerChunkCache that makes the geometry which continues at the edge of the world
+								// if( yc * CHUNK_HEIGHT + y <= ( level->getSeaLevel() - 10 ) ) tileId = Tile::stone_Id;
+								// else if( yc * CHUNK_HEIGHT + y < level->getSeaLevel() ) tileId = Tile::calmWater_Id;
+							// }
 
 							blocks[offs += step] = tileId;
 						}
