@@ -113,8 +113,9 @@ void ConsoleSaveFileConverter::ConvertSave(ConsoleSaveFile *sourceSave, ConsoleS
 
 
 #ifdef SPLIT_SAVES
-	int xzSize = LEVEL_LEGACY_WIDTH;
-	int hellScale = HELL_LEVEL_LEGACY_SCALE;
+	// 4J - Use 64-bit integers for world dimensions to support large/infinite worlds
+	int64_t xzSize = LEVEL_LEGACY_WIDTH;
+	int64_t hellScale = HELL_LEVEL_LEGACY_SCALE;
 	if ( sourceSave->doesFileExist( ldatPath ) ) 
 	{
 		ConsoleSaveFileInputStream fis = ConsoleSaveFileInputStream(sourceSave, ldatPath);
@@ -122,6 +123,7 @@ void ConsoleSaveFileConverter::ConvertSave(ConsoleSaveFile *sourceSave, ConsoleS
 		CompoundTag *tag = root->getCompound(L"Data");
 		LevelData ret(tag);
 
+		// getXZSize() and getHellScale() now return int64_t
 		xzSize = ret.getXZSize();
 		hellScale = ret.getHellScale();
 
@@ -141,23 +143,23 @@ void ConsoleSaveFileConverter::ConvertSave(ConsoleSaveFile *sourceSave, ConsoleS
 	// Overworld
 	{
 		app.DebugPrintf("Processing the overworld\n");
-		int halfXZSize = xzSize / 2;
+		int64_t halfXZSize = xzSize / 2;
 
-		int progressTarget = (xzSize) * (xzSize);
-		int currentProgress = 0;
-		if(progress) progress->progressStagePercentage((currentProgress*100)/progressTarget);
+		int64_t progressTarget = xzSize * xzSize;
+		int64_t currentProgress = 0;
+		if(progress) progress->progressStagePercentage((int)((currentProgress*100)/progressTarget));
 
-		for(int x = -halfXZSize; x < halfXZSize; ++x)
+		for(int64_t x = -halfXZSize; x < halfXZSize; ++x)
 		{
-			for(int z = -halfXZSize; z < halfXZSize; ++z)
+			for(int64_t z = -halfXZSize; z < halfXZSize; ++z)
 			{
-				//app.DebugPrintf("Processing overworld chunk %d,%d\n",x,z);
-				DataInputStream *dis = sourceCache._getChunkDataInputStream(sourceSave,L"",x,z);
+				//app.DebugPrintf("Processing overworld chunk %lld,%lld\n", x, z);
+				DataInputStream *dis = sourceCache._getChunkDataInputStream(sourceSave,L"", (int)x, (int)z);
 
 				if(dis)
 				{
 					int read = dis->read();
-					DataOutputStream *dos = targetCache._getChunkDataOutputStream(targetSave,L"",x,z);
+					DataOutputStream *dos = targetCache._getChunkDataOutputStream(targetSave,L"", (int)x, (int)z);
 					BufferedOutputStream bos(dos, 1024 * 1024);
 					while(read != -1)
 					{
@@ -176,7 +178,7 @@ void ConsoleSaveFileConverter::ConvertSave(ConsoleSaveFile *sourceSave, ConsoleS
 
 
 				++currentProgress;
-				if(progress) progress->progressStagePercentage( (currentProgress*100)/progressTarget);
+				if(progress) progress->progressStagePercentage((int)((currentProgress*100)/progressTarget));
 
 			}
 		}
@@ -185,24 +187,24 @@ void ConsoleSaveFileConverter::ConvertSave(ConsoleSaveFile *sourceSave, ConsoleS
 	// Nether
 	{
 		app.DebugPrintf("Processing the nether\n");
-		int hellSize = xzSize / hellScale;
-		int halfXZSize = hellSize / 2;
+		int64_t hellSize = xzSize / hellScale;
+		int64_t halfXZSize = hellSize / 2;
 
-		int progressTarget = (hellSize) * (hellSize);
-		int currentProgress = 0;
-		if(progress) progress->progressStagePercentage((currentProgress*100)/progressTarget);
+		int64_t progressTarget = hellSize * hellSize;
+		int64_t currentProgress = 0;
+		if(progress) progress->progressStagePercentage((int)((currentProgress*100)/progressTarget));
 
-		for(int x = -halfXZSize; x < halfXZSize; ++x)
+		for(int64_t x = -halfXZSize; x < halfXZSize; ++x)
 		{
-			for(int z = -halfXZSize; z < halfXZSize; ++z)
+			for(int64_t z = -halfXZSize; z < halfXZSize; ++z)
 			{
-				//app.DebugPrintf("Processing nether chunk %d,%d\n",x,z);
-				DataInputStream *dis = sourceCache._getChunkDataInputStream(sourceSave,L"DIM-1",x,z);
+				//app.DebugPrintf("Processing nether chunk %lld,%lld\n", x, z);
+				DataInputStream *dis = sourceCache._getChunkDataInputStream(sourceSave,L"DIM-1", (int)x, (int)z);
 
 				if(dis)
 				{
 					int read = dis->read();
-					DataOutputStream *dos = targetCache._getChunkDataOutputStream(targetSave,L"DIM-1",x,z);
+					DataOutputStream *dos = targetCache._getChunkDataOutputStream(targetSave,L"DIM-1", (int)x, (int)z);
 					BufferedOutputStream bos(dos, 1024 * 1024);
 					while(read != -1)
 					{
@@ -221,7 +223,7 @@ void ConsoleSaveFileConverter::ConvertSave(ConsoleSaveFile *sourceSave, ConsoleS
 
 
 				++currentProgress;
-				if(progress) progress->progressStagePercentage((currentProgress*100)/progressTarget);
+				if(progress) progress->progressStagePercentage((int)((currentProgress*100)/progressTarget));
 			}
 		}
 	}
@@ -229,23 +231,24 @@ void ConsoleSaveFileConverter::ConvertSave(ConsoleSaveFile *sourceSave, ConsoleS
 	// End
 	{
 		app.DebugPrintf("Processing the end\n");
-		int halfXZSize = END_LEVEL_MAX_WIDTH / 2;
+		// End dimension size remains fixed for now, but can be changed if desired
+		int64_t halfXZSize = END_LEVEL_MAX_WIDTH / 2;
 
-		int progressTarget = (END_LEVEL_MAX_WIDTH) * (END_LEVEL_MAX_WIDTH);
-		int currentProgress = 0;
-		if(progress) progress->progressStagePercentage((currentProgress*100)/progressTarget);
+		int64_t progressTarget = (int64_t)END_LEVEL_MAX_WIDTH * END_LEVEL_MAX_WIDTH;
+		int64_t currentProgress = 0;
+		if(progress) progress->progressStagePercentage((int)((currentProgress*100)/progressTarget));
 
-		for(int x = -halfXZSize; x < halfXZSize; ++x)
+		for(int64_t x = -halfXZSize; x < halfXZSize; ++x)
 		{
-			for(int z = -halfXZSize; z < halfXZSize; ++z)
+			for(int64_t z = -halfXZSize; z < halfXZSize; ++z)
 			{
-				//app.DebugPrintf("Processing end chunk %d,%d\n",x,z);
-				DataInputStream *dis = sourceCache._getChunkDataInputStream(sourceSave,L"DIM1/",x,z);
+				//app.DebugPrintf("Processing end chunk %lld,%lld\n", x, z);
+				DataInputStream *dis = sourceCache._getChunkDataInputStream(sourceSave,L"DIM1/", (int)x, (int)z);
 
 				if(dis)
 				{
 					int read = dis->read();
-					DataOutputStream *dos = targetCache._getChunkDataOutputStream(targetSave,L"DIM1/",x,z);
+					DataOutputStream *dos = targetCache._getChunkDataOutputStream(targetSave,L"DIM1/", (int)x, (int)z);
 					BufferedOutputStream bos(dos, 1024 * 1024);
 					while(read != -1)
 					{
@@ -264,7 +267,7 @@ void ConsoleSaveFileConverter::ConvertSave(ConsoleSaveFile *sourceSave, ConsoleS
 
 
 				++currentProgress;
-				if(progress) progress->progressStagePercentage((currentProgress*100)/progressTarget);
+				if(progress) progress->progressStagePercentage((int)((currentProgress*100)/progressTarget));
 			}
 		}
 	}
