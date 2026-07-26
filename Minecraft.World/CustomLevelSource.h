@@ -1,6 +1,7 @@
 #pragma once
 using namespace std;
 
+#include <cstdint>   // 提供 int64_t, uint64_t 等
 #include "ChunkSource.h"
 
 #ifndef _CONTENT_PACKAGE
