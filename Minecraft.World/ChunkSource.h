@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Biome.h"
+#include <cstdint>   // 提供 int64_t, uint64_t 等
 class ProgressListener;
 class TilePos;
 
 // The maximum number of chunks that we can store
 #ifdef _LARGE_WORLDS
 // 4J Stu - Our default map (at zoom level 3) is 1024x1024 blocks (or 64 chunks)
-#define LEVEL_MAX_WIDTH (5*64) //(6*54)
+#define LEVEL_MAX_WIDTH 9223372036854775807
 
 #define LEVEL_WIDTH_CLASSIC 54
 #define LEVEL_WIDTH_SMALL 64
