@@ -5,6 +5,8 @@
 #include "RespawnPacket.h"
 #include "LevelType.h"
 
+#include <cstdint>   // 提供 int64_t, uint64_t 等
+
 RespawnPacket::RespawnPacket()
 {
 	this->dimension = 0;
@@ -15,11 +17,11 @@ RespawnPacket::RespawnPacket()
 	this->m_newSeaLevel = false;
 	m_pLevelType = nullptr;
 	m_newEntityId = 0;
-	m_xzSize = LEVEL_MAX_WIDTH;
-	m_hellScale = HELL_LEVEL_MAX_SCALE;
+	m_xzSize = 9223372036854775807;
+	m_hellScale = 8;
 }
 
-RespawnPacket::RespawnPacket(char dimension, int64_t mapSeed, int mapHeight, GameType *playerGameType, char difficulty, LevelType *pLevelType, bool newSeaLevel, int newEntityId, int xzSize, int hellScale)
+RespawnPacket::RespawnPacket(char dimension, int64_t mapSeed, int mapHeight, GameType *playerGameType, char difficulty, LevelType *pLevelType, bool newSeaLevel, int newEntityId, int64_t xzSize, int64_t hellScale)
 {
 	this->dimension = dimension;
 	this->mapSeed = mapSeed;
@@ -56,8 +58,8 @@ void RespawnPacket::read(DataInputStream *dis) //throws IOException
 	m_newSeaLevel = dis->readBoolean();
 	m_newEntityId = dis->readShort();
 #ifdef _LARGE_WORLDS
-	m_xzSize = dis->readShort();
-	m_hellScale = dis->read();
+	m_xzSize = dis->readLong();
+	m_hellScale = dis->readLong();
 #endif
 	app.DebugPrintf("RespawnPacket::read - Difficulty = %d\n",difficulty);
 
@@ -81,8 +83,8 @@ void RespawnPacket::write(DataOutputStream *dos) //throws IOException
 	dos->writeBoolean(m_newSeaLevel);
 	dos->writeShort(m_newEntityId);
 #ifdef _LARGE_WORLDS
-	dos->writeShort(m_xzSize);
-	dos->write(m_hellScale);
+	dos->writeLong(m_xzSize);
+	dos->writeLong(m_hellScale);
 #endif
 }
 
