@@ -212,12 +212,12 @@ GameRules *DerivedLevelData::getGameRules()
 	return wrapped->getGameRules();
 }
 
-int DerivedLevelData::getXZSize()
+int64_t DerivedLevelData::getXZSize()
 {
 	return wrapped->getXZSize();
 }
 
-int DerivedLevelData::getHellScale()
+int64_t DerivedLevelData::getHellScale()
 {
 	return wrapped->getHellScale();
 }
