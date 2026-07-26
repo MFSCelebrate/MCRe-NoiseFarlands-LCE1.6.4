@@ -6,8 +6,8 @@
 
 HellFlatLevelSource::HellFlatLevelSource(Level *level, int64_t seed)
 {
-	int xzSize = level->getLevelData()->getXZSize();
-	int hellScale = level->getLevelData()->getHellScale();
+	int64_t xzSize = level->getLevelData()->getXZSize();
+	int64_t hellScale = level->getLevelData()->getHellScale();
 	m_XZSize = ceil(static_cast<float>(xzSize) / hellScale);
 
 	this->level = level;
