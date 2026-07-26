@@ -4,6 +4,7 @@
 #include "ConsoleSaveFileIO.h"
 #include "ConsoleSaveFileConverter.h"
 #include "ProgressListener.h"
+#include <cstdint>   // 提供 int64_t, uint64_t 等
 
 void ConsoleSaveFileConverter::ProcessSimpleFile(ConsoleSaveFile *sourceSave, FileEntry *sourceFileEntry, ConsoleSaveFile *targetSave, FileEntry *targetFileEntry)
 {
