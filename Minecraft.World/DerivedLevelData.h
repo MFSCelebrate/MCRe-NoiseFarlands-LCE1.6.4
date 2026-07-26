@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LevelData.h"
+#include <cstdint>   // 提供 int64_t, uint64_t 等
 
 class GameRules;
 
@@ -60,6 +61,6 @@ public:
 	bool isInitialized();
 	void setInitialized(bool initialized);
 	GameRules *getGameRules();
-	int getXZSize(); // 4J Added
-	int getHellScale(); // 4J Addded
+	int64_t getXZSize(); // 4J Added
+	int64_t getHellScale(); // 4J Addded
 };
