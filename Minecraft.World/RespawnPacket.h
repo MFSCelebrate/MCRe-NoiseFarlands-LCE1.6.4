@@ -2,6 +2,7 @@
 using namespace std;
 
 #include "Packet.h"
+#include <cstdint>   // 提供 int64_t, uint64_t 等
 
 class LevelType;
 class GameType;
@@ -17,11 +18,11 @@ public:
 	bool m_newSeaLevel;	// 4J added
 	LevelType *m_pLevelType;
 	int m_newEntityId;
-	int m_xzSize; // 4J Added
-	int m_hellScale; // 4J Added
+	int64_t m_xzSize; // 4J Added
+	int64_t m_hellScale; // 4J Added
 
 	RespawnPacket();
-	RespawnPacket(char dimension, int64_t mapSeed, int mapHeight, GameType *playerGameType, char difficulty, LevelType *pLevelType, bool newSeaLevel, int newEntityId, int xzSize, int hellScale);
+	RespawnPacket(char dimension, int64_t mapSeed, int mapHeight, GameType *playerGameType, char difficulty, LevelType *pLevelType, bool newSeaLevel, int newEntityId, int64_t xzSize, int64_t hellScale);
 
 	virtual void handle(PacketListener *listener);
 	virtual void read(DataInputStream *dis);
